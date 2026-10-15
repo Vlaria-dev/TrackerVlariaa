@@ -3,9 +3,6 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
 <title>Vla tracker</title>
 <style>
 :root{--bg:#fbf5ea;--card:#fff;--ink:#3a2a1c;--mut:#8a7560;--acc:#c0762b;--acc2:#f3dfc1;--ln:#ecdcc2;--ok:#4c8a4c;--inp:#fffaf0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -78,6 +75,7 @@ td{font-size:15px}
 textarea.wr:focus,input:focus,select:focus{outline:2px solid var(--acc);outline-offset:0;border-color:var(--acc)}
 textarea.wr::placeholder,input::placeholder{color:var(--mut);opacity:.7}
 @media(max-width:560px){textarea.wr,input,select{font-size:16px}}
+.pill{position:relative;z-index:1;display:inline-block;margin-top:10px;font-size:12px;padding:3px 10px;border-radius:99px;background:var(--card);border:1px solid var(--ln);color:var(--mut)}
 </style>
 </head>
 <body>
@@ -107,7 +105,8 @@ textarea.wr::placeholder,input::placeholder{color:var(--mut);opacity:.7}
 <g fill="#f6c649"><circle cx="64" cy="40" r="4" class="tw1"/><circle cx="320" cy="48" r="5" class="tw1" style="animation-delay:1s"/><circle cx="104" cy="18" r="3" class="tw1" style="animation-delay:.5s"/></g>
 </svg>
 <h1>🍞 Roti <span>Vla</span> — Tracker UMKM</h1>
-<p>Rencana 7 hari untuk usaha pre-order &amp; online order dari rumah. Data tersimpan di browser Anda.</p>
+<p>Rencana 7 hari untuk usaha pre-order &amp; online order dari rumah. Data tersinkron otomatis antar perangkat.</p>
+<div id="sync" class="pill">⏳ Memuat…</div>
 </header>
 <nav id="nav"></nav>
 <main id="main"></main>
@@ -133,7 +132,8 @@ S.hpp.forEach((h,i)=>{if(h.k===undefined)h.k=(HPP[i]||[""])[0]});
 S.plan.forEach((p,i)=>{if(p.f===undefined){p.f=PLAN[i][1];p.t=PLAN[i][3];p.it=PLAN[i][2].slice()}});
 S.ig.forEach((p,i)=>{if(p.f===undefined){p.f=IG[i][1];p.tj=IG[i][2];p.id=IG[i][3];p.cta=IG[i][4]}});
 S.sop.forEach((p,i)=>{if(p.a===undefined){p.a=SOP[i][0];p.tx=SOP[i][1]}});
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const saveLocal=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const save=()=>{saveLocal();queueSync()};
 const $=id=>document.getElementById(id);
 const rp=n=>"Rp "+Math.round(n||0).toLocaleString("id-ID");
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -147,7 +147,7 @@ const EB=k=>`<div style="margin:2px 0 12px"><button class="btn g" data-edit="${k
 // nav + sections
 $("nav").innerHTML=TABS.map(t=>`<button data-t="${t[0]}">${t[1]}</button>`).join("");
 $("main").innerHTML=TABS.map(t=>`<section id="s-${t[0]}"></section>`).join("");
-function show(t){document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id==="s-"+t));document.querySelectorAll("#s-"+t+" textarea").forEach(fit);scrollTo(0,0)}
+function show(t){try{sessionStorage.setItem("rv_tab",t)}catch(e){}document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id==="s-"+t));document.querySelectorAll("#s-"+t+" textarea").forEach(fit);scrollTo(0,0)}
 $("nav").onclick=e=>{if(e.target.dataset.t)show(e.target.dataset.t)};
 
 // generic simple-list table (ig, sop)
@@ -172,7 +172,7 @@ $("s-dash").innerHTML=`<h2>Ringkasan progres</h2><p class="sub">Terisi otomatis 
 <li>Catat pesanan dan pembayaran di <b>Order</b>.</li>
 <li>Pakai <b>Konten Instagram</b> untuk menjaga konsistensi branding.</li>
 <li>Terapkan <b>SOP</b>; checklist tidak menggantikan validasi keamanan pangan.</li></ol></div>
-<p class="note">Template kerja ini bukan pengganti konsultasi keamanan pangan/perizinan. Data tersimpan hanya di browser perangkat Anda dan tidak dibagikan ke orang yang menerima link.</p>`;
+<p class="note">Template kerja ini bukan pengganti konsultasi keamanan pangan/perizinan. Perubahan disimpan otomatis dan disinkronkan ke semua perangkat yang membuka halaman ini. Orang yang hanya diberi akses lihat tidak dapat mengubah data.</p>`;
 
 // PLAN
 $("s-plan").innerHTML=`<h2>Planning 7 Hari</h2><p class="sub">Fokus: validasi produk, uji rasa ke orang terdekat, branding Instagram, dan pre-order skala kecil.</p>`+EB("plan")+S.plan.map((p,i)=>`<div class="card day"><h3><small>${PLAN[i][0]}</small>${ta("plan",i,"f",p.f,"h")}</h3>${p.it.map((t,j)=>`<div class="chk"><input type="checkbox" data-k="plan" data-i="${i}" data-j="${j}"${p.c[j]?" checked":""}>${ta("plan",i,"it",t,"",j)}</div>`).join("")}<div class="tg"><span>🎯</span>${ta("plan",i,"t",p.t)}</div><div class="row"><select data-k="plan" data-i="${i}" data-f="st">${opt(["Belum mulai","Sedang jalan","Selesai"],p.st)}</select><input type="date" data-k="plan" data-i="${i}" data-f="due" value="${p.due}"><textarea class="wr" rows="1" style="flex:3 1 220px" placeholder="Catatan / hasil aktual" data-k="plan" data-i="${i}" data-f="n">${esc(p.n)}</textarea></div></div>`).join("");
@@ -250,7 +250,48 @@ document.addEventListener("click",e=>{
 if(!S.taste.length)for(let i=0;i<5;i++)S.taste.push({}),S.ord.push({});
 paint("hpp",HC);paint("taste",TC);paint("ord",OC);calc();
 window.addEventListener("resize",()=>document.querySelectorAll("section.on textarea").forEach(fit));
-show("dash");
+let t0="dash",y0=0;try{t0=sessionStorage.getItem("rv_tab")||"dash";y0=+sessionStorage.getItem("rv_y")||0;sessionStorage.removeItem("rv_y")}catch(e){}
+show(TABS.some(t=>t[0]===t0)?t0:"dash");if(y0)scrollTo(0,y0);
+
+// ===== Sinkronisasi antar perangkat =====
+const SK=["plan","hpp","taste","ord","ig","sop"];
+const sec=k=>k==="hpp"?{v:S.hpp,price:S.price,fixed:S.fixed}:{v:S[k]};
+const js=k=>JSON.stringify(sec(k));
+let DB=null,canW=true,last={},tmr=null,busy=false,again=false,rt=null;
+const setSt=t=>{const e=$("sync");if(e)e.textContent=t};
+function queueSync(){if(!DB||!canW)return;setSt("☁️ Menyimpan…");clearTimeout(tmr);tmr=setTimeout(flush,800)}
+async function flush(){
+  tmr=null;if(!DB||!canW)return;if(busy){again=true;return}busy=true;
+  try{for(const k of SK){if(last[k]===undefined)continue;const j=js(k);if(j!==last[k]){await DB.doc("tracker/"+k).set(sec(k));last[k]=j}}setSt("☁️ Tersinkron")}
+  catch(e){if(e&&e.code==="invalid_argument"){canW=false;setSt("👁 Hanya lihat (tidak bisa menyimpan)")}else setSt("⚠️ Gagal sinkron, data aman di perangkat ini")}
+  busy=false;if(again){again=false;flush()}
+}
+function reloadSoon(){
+  const go=()=>{const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)){a.addEventListener("blur",()=>setTimeout(go,300),{once:true});return}
+    try{sessionStorage.setItem("rv_y",String(scrollY))}catch(e){}location.reload()};
+  clearTimeout(rt);rt=setTimeout(go,400);
+}
+function onDoc(k,snap){
+  if(!snap.exists){if(last[k]===undefined){last[k]=null;if(canW)queueSync()}return}
+  const d=snap.data(),rj=JSON.stringify(k==="hpp"?{v:d.v,price:d.price,fixed:d.fixed}:{v:d.v});
+  if(rj===js(k)){last[k]=rj;return}
+  if(rj===last[k])return;
+  if(last[k]!==undefined&&js(k)!==last[k])return;
+  S[k]=d.v;if(k==="hpp"){if(d.price!==undefined)S.price=d.price;if(d.fixed!==undefined)S.fixed=d.fixed}
+  last[k]=rj;saveLocal();reloadSoon();
+}
+(async()=>{
+  try{
+    if(!(window.claude&&claude.use)){setSt("💾 Tersimpan di perangkat ini saja");return}
+    DB=await claude.use("db");
+    if(!DB){setSt("💾 Tersimpan di perangkat ini saja");return}
+    try{const u=await claude.use("user");if(u&&(await u.can("data.write"))===false)canW=false}catch(e){}
+    setSt(canW?"☁️ Menyinkronkan…":"👁 Hanya lihat");
+    SK.forEach(k=>DB.doc("tracker/"+k).onSnapshot(sn=>{onDoc(k,sn);if(canW&&!tmr&&!busy)setSt("☁️ Tersinkron")},()=>setSt("⚠️ Sinkron terputus")));
+  }catch(e){setSt("💾 Tersimpan di perangkat ini saja")}
+})();
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&tmr){clearTimeout(tmr);flush()}});
+
 document.addEventListener("pointerdown",e=>{const b=e.target.closest("nav button,.btn");if(!b)return;const r=b.getBoundingClientRect(),d=Math.max(r.width,r.height),sp=document.createElement("span");sp.className="rip";sp.style.cssText=`width:${d}px;height:${d}px;left:${e.clientX-r.left-d/2}px;top:${e.clientY-r.top-d/2}px`;b.appendChild(sp);setTimeout(()=>sp.remove(),650)});
 </script>
 </body>
