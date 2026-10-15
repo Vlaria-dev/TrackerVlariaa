@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vla tracker</title>
+<style>
+:root{--bg:#fbf5ea;--card:#fff;--ink:#3a2a1c;--mut:#8a7560;--acc:#c0762b;--acc2:#f3dfc1;--ln:#ecdcc2;--ok:#4c8a4c;--inp:#fffaf0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1611;--card:#2a2119;--ink:#f3e6d3;--mut:#b09a82;--acc:#e29a4e;--acc2:#44321f;--ln:#46372a;--ok:#7bbf7b;--inp:#33281e}}
+:root[data-theme="dark"]{--bg:#1d1611;--card:#2a2119;--ink:#f3e6d3;--mut:#b09a82;--acc:#e29a4e;--acc2:#44321f;--ln:#46372a;--ok:#7bbf7b;--inp:#33281e}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg) url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27150%27%20height%3D%27150%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23c0762b%27%20stroke-opacity%3D%27.13%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%3E%3Cellipse%20cx%3D%2732%27%20cy%3D%2736%27%20rx%3D%2717%27%20ry%3D%279%27%20transform%3D%27rotate%28-20%2032%2036%29%27/%3E%3Cpath%20d%3D%27M22%2034q10-8%2020%200%27/%3E%3Cellipse%20cx%3D%27106%27%20cy%3D%27104%27%20rx%3D%2717%27%20ry%3D%279%27%20transform%3D%27rotate%2818%20106%20104%29%27/%3E%3Cpath%20d%3D%27M96%20104q10-8%2020%200%27/%3E%3Cpath%20d%3D%27M100%2024q6-8%2012%200t12%200%27/%3E%3Cpath%20d%3D%27M20%20120q6-8%2012%200t12%200%27/%3E%3C/g%3E%3Cg%20fill%3D%27%23e0a93b%27%20fill-opacity%3D%27.16%27%3E%3Ccircle%20cx%3D%2784%27%20cy%3D%2750%27%20r%3D%273%27/%3E%3Ccircle%20cx%3D%2744%27%20cy%3D%2794%27%20r%3D%273%27/%3E%3Ccircle%20cx%3D%2770%27%20cy%3D%27128%27%20r%3D%272%27/%3E%3Ccircle%20cx%3D%27132%27%20cy%3D%2760%27%20r%3D%272%27/%3E%3C/g%3E%3C/svg%3E");color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:22px 16px 8px;max-width:1000px;margin:auto}
+h1{margin:0;font-size:24px}h1 span{color:var(--acc)}
+header p{margin:4px 0 0;color:var(--mut);font-size:14px}
+nav{display:flex;gap:6px;overflow-x:auto;padding:10px 16px;max-width:1000px;margin:auto;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5}
+nav button{flex:none;border:1px solid var(--ln);background:var(--card);color:var(--ink);padding:7px 13px;border-radius:99px;font:inherit;font-size:14px;cursor:pointer}
+nav button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+main{max-width:1000px;margin:auto;padding:6px 16px 40px}
+section{display:none}section.on{display:block}
+h2{font-size:18px;margin:14px 0 4px}
+.sub{color:var(--mut);font-size:13px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:14px}
+.stat b{display:block;font-size:24px;color:var(--acc)}.stat small{color:var(--mut)}
+.bar{height:8px;background:var(--acc2);border-radius:9px;overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;background:var(--acc);width:0;transition:width .3s}
+.day{margin-bottom:10px}
+.day h3{margin:0 0 6px;font-size:16px;display:flex;gap:8px;align-items:baseline}.day h3 small{color:var(--acc);font-weight:600;white-space:nowrap}
+.chk{display:grid;grid-template-columns:18px 1fr;gap:10px;align-items:start;margin:4px 0;font-size:14px}
+.chk input{width:18px;height:18px;margin:2px 0 0;padding:0;accent-color:var(--acc)}
+.tg{display:grid;grid-template-columns:18px 1fr;gap:10px;font-size:13px;color:var(--mut);margin:10px 0}.tg .ed{color:var(--mut);font-size:13px}
+textarea.ed{font:inherit;color:inherit;background:transparent;border:1px solid transparent;border-radius:6px;padding:0 4px;resize:none;overflow:hidden;width:100%;line-height:1.5;display:block;min-width:0}
+.editing textarea.ed{border-color:var(--ln);background:var(--inp);padding:1px 6px}
+textarea.h{font-weight:600;font-size:16px}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1 1 130px}
+input,select,textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--inp);border:1px solid var(--ln);border-radius:8px;padding:6px 8px;width:100%;min-width:0}
+.tw{overflow-x:auto;border:1px solid var(--ln);border-radius:12px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:640px}
+th{background:var(--acc2);text-align:left;font-size:12px;padding:8px;white-space:nowrap}
+td{padding:5px;border-top:1px solid var(--ln);vertical-align:top;font-size:14px}
+td.ro{padding:8px;white-space:nowrap}
+.btn{border:0;background:var(--acc);color:#fff;border-radius:9px;padding:8px 14px;font:inherit;font-size:14px;cursor:pointer;margin-top:10px}
+.btn.g{background:transparent;color:var(--mut);border:1px solid var(--ln)}
+.x{background:none;border:0;color:var(--mut);cursor:pointer;font-size:16px}
+.res{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:12px}
+.note{font-size:12px;color:var(--mut);margin-top:16px}
+a{color:var(--acc)}
+
+header{width:calc(100% - 32px);margin:12px auto 0;padding:26px 22px;min-height:150px;border-radius:22px;position:relative;overflow:hidden;background:linear-gradient(120deg,var(--acc2),var(--card) 85%);border:1px solid var(--ln)}
+header h1,header p{position:relative;z-index:1;max-width:58%}
+.hero-art{position:absolute;right:0;bottom:0;height:100%;width:auto;max-width:64%;pointer-events:none}
+.steam{stroke:var(--mut)}.steam path{animation:st 3s ease-in-out infinite;opacity:0}
+.tw1{animation:tw 2.4s ease-in-out infinite}
+@keyframes st{0%{transform:translateY(10px);opacity:0}50%{opacity:.75}100%{transform:translateY(-12px);opacity:0}}
+@keyframes tw{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+@media(max-width:560px){header h1,header p{max-width:100%}.hero-art{opacity:.28}}
+nav{background:var(--bg);background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+nav button,.btn{position:relative;overflow:hidden;transition:transform .15s ease,box-shadow .2s ease,background .25s ease,color .25s ease,border-color .25s ease}
+nav button:hover{transform:translateY(-2px);border-color:var(--acc);box-shadow:0 4px 12px rgba(150,90,30,.18)}
+nav button:active,.btn:active{transform:scale(.93);box-shadow:inset 0 2px 6px rgba(0,0,0,.2)}
+nav button.on{background:linear-gradient(135deg,#e29a4e,var(--acc));border-color:var(--acc);color:#fff;font-weight:600;box-shadow:0 4px 14px rgba(192,118,43,.4);animation:pop .35s ease}
+nav button.on::before{content:"🍞 "}
+.btn:hover{box-shadow:0 4px 12px rgba(150,90,30,.3);transform:translateY(-1px)}
+.stat{transition:transform .2s ease,box-shadow .2s ease}.stat:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(150,90,30,.15)}
+section.on{animation:sin .4s ease both}
+@keyframes sin{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(.88)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+.rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.5);transform:scale(0);animation:rp .6s ease-out forwards;pointer-events:none}
+@keyframes rp{to{transform:scale(2.6);opacity:0}}
+@media(prefers-reduced-motion:reduce){*,*::before{animation:none!important;transition:none!important}}
+
+textarea.wr{font:inherit;font-size:15px;line-height:1.55;color:var(--ink);background:var(--inp);border:1px solid var(--ln);border-radius:8px;padding:7px 10px;resize:none;overflow:hidden;width:100%;display:block;min-height:38px;white-space:pre-wrap;overflow-wrap:anywhere}
+td{font-size:15px}
+textarea.wr:focus,input:focus,select:focus{outline:2px solid var(--acc);outline-offset:0;border-color:var(--acc)}
+textarea.wr::placeholder,input::placeholder{color:var(--mut);opacity:.7}
+@media(max-width:560px){textarea.wr,input,select{font-size:16px}}
+</style>
+</head>
+<body>
+<header>
+<svg class="hero-art" viewBox="0 0 380 210" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+<defs>
+<linearGradient id="gb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4c070"/><stop offset=".6" stop-color="#d98a34"/><stop offset="1" stop-color="#b86a22"/></linearGradient>
+<linearGradient id="gb2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e3a04a"/><stop offset="1" stop-color="#a95c1c"/></linearGradient>
+<linearGradient id="gv" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2b0"/><stop offset="1" stop-color="#f6c649"/></linearGradient>
+<g id="bun">
+<path d="M112 142Q112 186 190 186Q268 186 268 142Z" fill="url(#gb2)"/>
+<path d="M104 136Q150 154 190 144Q230 154 276 136Q282 150 264 152Q190 166 116 152Q98 150 104 136Z" fill="url(#gv)"/>
+<path d="M112 138Q112 90 190 90Q268 90 268 138Q190 126 112 138Z" fill="url(#gb)"/>
+<path d="M140 108Q190 88 240 108" fill="none" stroke="#fff" stroke-opacity=".38" stroke-width="5" stroke-linecap="round"/>
+<path d="M160 106l8 16M190 102v18M220 106l-8 16" stroke="#a95c1c" stroke-opacity=".45" stroke-width="3" stroke-linecap="round"/>
+<g fill="#fff" fill-opacity=".85"><circle cx="150" cy="116" r="2.5"/><circle cx="176" cy="98" r="2"/><circle cx="212" cy="112" r="2.5"/><circle cx="238" cy="124" r="2"/><circle cx="128" cy="128" r="2"/></g>
+<circle cx="116" cy="151" r="6" fill="#fbd75c"/><circle cx="264" cy="151" r="6" fill="#fbd75c"/>
+</g>
+</defs>
+<ellipse cx="190" cy="194" rx="178" ry="12" fill="#7a4a1d" fill-opacity=".2"/>
+<g stroke="#b98a3e" stroke-width="3" fill="none" stroke-linecap="round"><path d="M16 196Q20 140 38 86"/><path d="M356 196Q360 150 342 100"/></g>
+<g fill="#e0b25a"><ellipse cx="30" cy="104" rx="5" ry="9" transform="rotate(-20 30 104)"/><ellipse cx="42" cy="92" rx="5" ry="9" transform="rotate(15 42 92)"/><ellipse cx="26" cy="124" rx="5" ry="9" transform="rotate(-25 26 124)"/><ellipse cx="350" cy="118" rx="5" ry="9" transform="rotate(20 350 118)"/><ellipse cx="340" cy="136" rx="5" ry="9" transform="rotate(-15 340 136)"/></g>
+<use href="#bun" transform="translate(-38 30) scale(.62)" opacity=".92"/>
+<use href="#bun" transform="translate(182 30) scale(.62)" opacity=".92"/>
+<use href="#bun"/>
+<g class="steam" fill="none" stroke-width="4" stroke-linecap="round"><path d="M165 80q-8-10 0-20t0-20"/><path d="M190 74q-8-10 0-20t0-20" style="animation-delay:.9s"/><path d="M215 80q-8-10 0-20t0-20" style="animation-delay:1.8s"/></g>
+<g fill="#f6c649"><circle cx="64" cy="40" r="4" class="tw1"/><circle cx="320" cy="48" r="5" class="tw1" style="animation-delay:1s"/><circle cx="104" cy="18" r="3" class="tw1" style="animation-delay:.5s"/></g>
+</svg>
+<h1>🍞 Roti <span>Vla</span> — Tracker UMKM</h1>
+<p>Rencana 7 hari untuk usaha pre-order &amp; online order dari rumah. Data tersimpan di browser Anda.</p>
+</header>
+<nav id="nav"></nav>
+<main id="main"></main>
+
+<script>
+const TABS=[["dash","Dashboard"],["plan","Planning"],["hpp","HPP & Harga"],["taste","Uji Rasa"],["ord","Order"],["ig","Konten Instagram"],["sop","SOP"]];
+const PLAN=[
+["Hari 1","Konsep & riset ringan",["Tentukan target pembeli awal (teman, keluarga, rekan kerja/komunitas)","Lihat 5–10 akun/penjual roti serupa","Catat harga, varian, cara pesan, dan gaya konten","Tentukan pembeda produk"],"Ringkasan target pasar, 3 pembeda produk, dan daftar kompetitor"],
+["Hari 2","Resep & standar produk",["Uji 2–3 varian maksimal","Timbang bahan dengan gram/ml","Catat hasil, tekstur, rasa, waktu produksi","Tentukan ukuran roti dan jumlah vla"],"Kartu resep kandidat + standar ukuran/isian"],
+["Hari 3","HPP & harga jual",["Catat biaya bahan, kemasan, energi, tenaga, dan susut","Hitung biaya variabel per roti","Tentukan harga jual awal","Hitung kontribusi per roti"],"HPP dan harga jual terdokumentasi; tidak hanya meniru harga pesaing"],
+["Hari 4","Uji rasa orang terdekat",["Minta 10–15 orang mencoba jika memungkinkan","Minta penilaian tanpa mengarahkan jawaban","Catat rasa, tekstur, ukuran, kemanisan, harga","Pilih 1–2 perbaikan utama"],"Rekap feedback dan keputusan resep"],
+["Hari 5","Branding Instagram & SOP",["Rapikan bio, foto profil, highlight cara pesan","Siapkan 3–5 konten awal","Buat template order dan jawaban DM","Terapkan SOP kebersihan dan penyimpanan"],"Profil siap menerima order, template pemesanan, SOP awal"],
+["Hari 6","Soft launch pre-order",["Buka pre-order dengan batas kuota realistis","Jelaskan varian, harga, deadline, jadwal kirim/ambil","Konfirmasi pembayaran dan alamat/pengambilan","Produksi sesuai pesanan dan catat batch"],"Pesanan pertama tercatat; produksi sesuai kapasitas"],
+["Hari 7","Evaluasi & keputusan",["Rekap omzet, biaya, order, produk gagal/sisa","Lihat varian paling disukai","Catat kendala produksi/pengiriman","Tentukan 3 prioritas minggu kedua"],"Laporan singkat dan target minggu berikutnya"]];
+const HPP=[["Bahan roti",125000,"Timbang sesuai resep"],["Bahan vla",90000,"Termasuk susu/telur/bahan lain"],["Kemasan & label",25000,"Food-grade"],["Gas/listrik/air",15000,"Alokasi per batch"],["Tenaga kerja langsung",35000,"Masukkan nilai waktu kerja"],["Susut/produk gagal",15000,"Gunakan data aktual bila tersedia"]];
+const IG=[["Hari 1","Story","Kenalan brand","Cerita singkat kenapa membuat roti vla dan siapa di baliknya","Ikuti perjalanan kami"],["Hari 2","Reels/Story","Perlihatkan produk","Close-up tekstur roti dan vla; jangan membuat klaim berlebihan","Varian mana yang ingin dicoba?"],["Hari 3","Carousel","Edukasi & transparansi","Kenalkan varian, ukuran, kisaran harga, dan cara pemesanan","Simpan info cara order"],["Hari 4","Story","Validasi produk","Behind the scenes uji rasa dan polling sederhana","Pilih varian favorit"],["Hari 5","Carousel/Highlight","Memudahkan order","Cara pre-order, deadline, jadwal produksi/pengambilan, area layanan","DM untuk pre-order"],["Hari 6","Story/Reels","Soft launch","Tampilkan batch awal dan kuota sesuai kapasitas","Pesan sebelum batas waktu"],["Hari 7","Story","Bangun kepercayaan","Terima kasih, proses packing higienis, ajakan memberi feedback","Kirim masukan setelah mencoba"]];
+const SOP=[["Persiapan area","Pisahkan area produksi dari aktivitas rumah; jauhkan hewan peliharaan, sampah, bahan kimia, dan barang pribadi. Bersihkan lalu sanitasi permukaan/peralatan sesuai label produk."],["Kebersihan personal","Cuci tangan sebelum bekerja, setelah menyentuh bahan mentah/sampah/uang/ponsel, dan setelah dari toilet. Pakaian kerja bersih; tutup rambut; jangan bekerja saat sakit."],["Penerimaan bahan","Periksa kemasan, kondisi, tanggal kedaluwarsa, dan suhu bahan yang perlu didinginkan. Catat pemasok dan tanggal beli; pisahkan bahan rusak/meragukan."],["Penimbangan & produksi","Gunakan resep baku (gram/ml), timbangan sesuai, alat bersih, dan catatan batch: jumlah dibuat, layak jual, dan gagal."],["Vla & pengendalian suhu","Vla berbahan susu/telur mudah rusak. Gunakan bahan aman dan pemasakan tepat; hindari kontaminasi silang. Tetapkan batas waktu/suhu dari panduan keamanan pangan terverifikasi."],["Pendinginan & penyimpanan","Lindungi dari debu dan kontak tangan. Produk bervla umumnya perlu rantai dingin. Jangan menetapkan masa simpan tanpa validasi."],["Pengemasan & label","Gunakan kemasan food-grade. Cantumkan identitas produk, informasi penyimpanan yang benar, dan alergen (susu, telur, gandum)."],["Pre-order","Catat nama/kode pelanggan, varian, jumlah, jadwal, alamat/ambil sendiri, ongkir, pembayaran, kebutuhan khusus. Konfirmasi ulang sebelum produksi."],["Pengiriman","Pastikan jumlah dan varian sesuai. Gunakan pengiriman dan kemasan yang menjaga kondisi produk; beri petunjuk penyimpanan yang tervalidasi."],["Keluhan/produk diragukan","Hentikan distribusi batch yang diduga tidak aman, simpan catatan batch dan pelanggan, tanggapi keluhan, evaluasi penyebab, dokumentasikan tindakan koreksi."],["Penutupan harian","Catat penjualan, pengeluaran, stok, sisa, produk gagal, dan saldo pembayaran. Bersihkan alat/area dan simpan bahan sesuai petunjuk."],["Kepatuhan usaha","Cek kewajiban perizinan, higiene-sanitasi, label, dan ketentuan pangan rumahan lewat instansi resmi setempat sebelum memperluas penjualan."]];
+
+const KEY="rotivla_v1";
+let S=null;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!S||!S.plan)S={plan:PLAN.map(p=>({c:p[2].map(()=>0),st:"Belum mulai",due:"",n:""})),hpp:HPP.map(h=>({k:h[0],b:h[1],j:50,n:h[2]})),price:8000,fixed:300000,taste:[],ord:[],ig:IG.map(()=>({st:"Belum dibuat",l:"",n:""})),sop:SOP.map(()=>({st:"Belum dicek",n:""}))};
+S.hpp.forEach((h,i)=>{if(h.k===undefined)h.k=(HPP[i]||[""])[0]});
+S.plan.forEach((p,i)=>{if(p.f===undefined){p.f=PLAN[i][1];p.t=PLAN[i][3];p.it=PLAN[i][2].slice()}});
+S.ig.forEach((p,i)=>{if(p.f===undefined){p.f=IG[i][1];p.tj=IG[i][2];p.id=IG[i][3];p.cta=IG[i][4]}});
+S.sop.forEach((p,i)=>{if(p.a===undefined){p.a=SOP[i][0];p.tx=SOP[i][1]}});
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const $=id=>document.getElementById(id);
+const rp=n=>"Rp "+Math.round(n||0).toLocaleString("id-ID");
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const opt=(a,v)=>a.map(x=>`<option${x===v?" selected":""}>${x}</option>`).join("");
+const num=v=>parseFloat(v)||0;
+
+const fit=t=>{t.style.height="auto";if(t.scrollHeight)t.style.height=t.scrollHeight+"px"};
+const wt=(k,i,f,v,ph)=>`<textarea class="wr" rows="1"${ph?` placeholder="${ph}"`:""} data-k="${k}" data-i="${i}" data-f="${f}">${esc(v)}</textarea>`;
+const ta=(k,i,f,v,c,j)=>`<textarea class="ed ${c||""}" rows="1" readonly data-k="${k}" data-i="${i}" data-f="${f}"${j!==undefined?` data-j="${j}"`:""}>${esc(v)}</textarea>`;
+const EB=k=>`<div style="margin:2px 0 12px"><button class="btn g" data-edit="${k}">✏️ Mode edit</button></div>`;
+// nav + sections
+$("nav").innerHTML=TABS.map(t=>`<button data-t="${t[0]}">${t[1]}</button>`).join("");
+$("main").innerHTML=TABS.map(t=>`<section id="s-${t[0]}"></section>`).join("");
+function show(t){document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id==="s-"+t));document.querySelectorAll("#s-"+t+" textarea").forEach(fit);scrollTo(0,0)}
+$("nav").onclick=e=>{if(e.target.dataset.t)show(e.target.dataset.t)};
+
+// generic simple-list table (ig, sop)
+function listTable(id,key,head,rows,stOpts){
+  const F=key==="ig"?["f","tj","id","cta"]:["a","tx"];
+  $("s-"+id).insertAdjacentHTML("beforeend",EB(key)+`<div class="tw"><table><thead><tr>${head.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${S[key].map((r,i)=>`<tr><td class="ro">${key==="ig"?IG[i][0]:"SOP-"+String(i+1).padStart(2,"0")}</td>${F.map(f=>`<td style="min-width:${f==="tx"||f==="id"?250:120}px">${ta(key,i,f,r[f])}</td>`).join("")}<td><select data-k="${key}" data-i="${i}" data-f="st">${opt(stOpts,r.st)}</select></td>${key==="ig"?`<td style="min-width:180px">${wt("ig",i,"l",r.l,"https://")}</td>`:""}<td style="min-width:220px">${wt(key,i,"n",r.n)}</td></tr>`).join("")}</tbody></table></div>`);
+}
+
+// DASHBOARD
+$("s-dash").innerHTML=`<h2>Ringkasan progres</h2><p class="sub">Terisi otomatis dari data di tab lain.</p>
+<div class="grid">
+<div class="card stat"><small>Aktivitas selesai</small><b id="d1"></b></div>
+<div class="card stat"><small>Progres planning</small><b id="d2"></b><div class="bar"><i id="d2b"></i></div></div>
+<div class="card stat"><small>Order tercatat</small><b id="d3"></b></div>
+<div class="card stat"><small>Roti terjual</small><b id="d4"></b></div>
+<div class="card stat"><small>Omzet tercatat</small><b id="d5"></b></div>
+<div class="card stat"><small>Masukan uji rasa</small><b id="d6"></b></div></div>
+<h2>Cara pakai</h2><div class="card"><ol style="margin:0;padding-left:20px">
+<li>Mulai dari <b>Planning 7 Hari</b>: centang aktivitas, isi tenggat, status, dan catatan.</li>
+<li>Catat bahan/biaya di <b>HPP &amp; Harga</b>; ganti angka contoh dengan biaya aktual.</li>
+<li>Masukkan setiap orang yang mencoba produk di <b>Uji Rasa</b>.</li>
+<li>Catat pesanan dan pembayaran di <b>Order</b>.</li>
+<li>Pakai <b>Konten Instagram</b> untuk menjaga konsistensi branding.</li>
+<li>Terapkan <b>SOP</b>; checklist tidak menggantikan validasi keamanan pangan.</li></ol></div>
+<p class="note">Template kerja ini bukan pengganti konsultasi keamanan pangan/perizinan. Data tersimpan hanya di browser perangkat Anda dan tidak dibagikan ke orang yang menerima link.</p>`;
+
+// PLAN
+$("s-plan").innerHTML=`<h2>Planning 7 Hari</h2><p class="sub">Fokus: validasi produk, uji rasa ke orang terdekat, branding Instagram, dan pre-order skala kecil.</p>`+EB("plan")+S.plan.map((p,i)=>`<div class="card day"><h3><small>${PLAN[i][0]}</small>${ta("plan",i,"f",p.f,"h")}</h3>${p.it.map((t,j)=>`<div class="chk"><input type="checkbox" data-k="plan" data-i="${i}" data-j="${j}"${p.c[j]?" checked":""}>${ta("plan",i,"it",t,"",j)}</div>`).join("")}<div class="tg"><span>🎯</span>${ta("plan",i,"t",p.t)}</div><div class="row"><select data-k="plan" data-i="${i}" data-f="st">${opt(["Belum mulai","Sedang jalan","Selesai"],p.st)}</select><input type="date" data-k="plan" data-i="${i}" data-f="due" value="${p.due}"><textarea class="wr" rows="1" style="flex:3 1 220px" placeholder="Catatan / hasil aktual" data-k="plan" data-i="${i}" data-f="n">${esc(p.n)}</textarea></div></div>`).join("");
+
+// HPP
+$("s-hpp").innerHTML=`<h2>HPP &amp; Harga Jual</h2><p class="sub">Ganti nilai contoh dengan biaya aktual. Hitungan per roti adalah estimasi awal.</p>
+<div class="tw"><table><thead><tr><th>Komponen</th><th>Biaya per batch (Rp)</th><th>Roti layak jual</th><th>Biaya per roti</th><th>Catatan</th><th></th></tr></thead><tbody id="tb-hpp"></tbody></table></div><button class="btn" data-add="hpp">+ Tambah baris</button>
+<div class="row" style="margin-top:12px"><label>Harga jual per roti (Rp)<input type="number" id="price" value="${S.price}"></label><label>Biaya tetap per minggu (Rp)<input type="number" id="fixed" value="${S.fixed}"></label></div>
+<div class="res"><div class="card stat"><small>Total biaya batch</small><b id="r1"></b></div><div class="card stat"><small>HPP per roti</small><b id="r2"></b></div><div class="card stat"><small>Kontribusi per roti</small><b id="r3"></b></div><div class="card stat"><small>Margin kontribusi</small><b id="r4"></b></div><div class="card stat"><small>Titik impas / minggu</small><b id="r5"></b></div></div>
+<p class="note">Biaya tetap dan harga jual adalah contoh. Belum memasukkan semua pajak/biaya lain.</p>`;
+
+// TASTE & ORDER (dynamic rows)
+const TC=[["d","Tanggal","date"],["k","Kode responden"],["v","Varian"],["r","Rasa (1–5)","number"],["t","Tekstur (1–5)","number"],["m","Tampilan (1–5)","number"],["h","Harga (1–5)","number"],["c","Komentar / saran"],["b","Mau beli?","sel",["","Ya","Tidak"]]];
+const OC=[["d","Tanggal order","date"],["p","Pelanggan"],["v","Varian"],["q","Jumlah","number"],["h","Harga satuan","number"],["o","Ongkir","number"],["om","Omzet produk","calc"],["tt","Total diterima","calc"],["b","Pembayaran","sel",["Belum bayar","DP","Lunas"]],["n","Status / catatan"]];
+const HC=[["k","Komponen biaya"],["b","Biaya per batch (Rp)","number"],["j","Roti layak jual","number"],["pc","Biaya per roti","calc"],["n","Catatan"]];
+const COLS={taste:TC,ord:OC,hpp:HC};
+function dyn(id,key,cols,title,sub,avg){
+  $("s-"+id).innerHTML=`<h2>${title}</h2><p class="sub">${sub}</p><div class="tw"><table><thead><tr>${cols.map(c=>`<th>${c[1]}</th>`).join("")}<th></th></tr></thead><tbody id="tb-${key}"></tbody></table></div><button class="btn" data-add="${key}">+ Tambah baris</button>`;
+  paint(key,cols);
+}
+function paint(key,cols){
+  $("tb-"+key).innerHTML=S[key].map((r,i)=>`<tr>${cols.map(c=>c[2]==="calc"?`<td class="ro" id="${key}${c[0]}${i}"></td>`:c[2]==="sel"?`<td><select data-k="${key}" data-i="${i}" data-f="${c[0]}">${opt(c[3],r[c[0]]||c[3][0])}</select></td>`:!c[2]?`<td style="min-width:${c[0]==="c"||c[0]==="n"?230:140}px">${wt(key,i,c[0],r[c[0]])}</td>`:`<td><input type="${c[2]}" ${c[2]==="number"?'min="0" style="min-width:90px"':'style="min-width:130px"'} data-k="${key}" data-i="${i}" data-f="${c[0]}" value="${esc(r[c[0]])}"></td>`).join("")}<td><button class="x" data-del="${key}" data-i="${i}" aria-label="Hapus">✕</button></td></tr>`).join("");
+  calc();
+  document.querySelectorAll("#tb-"+key+" textarea").forEach(fit);
+}
+dyn("taste","taste",TC,"Uji Rasa — Orang Terdekat","Satu baris per responden. Skala 1–5 (1 = sangat kurang, 5 = sangat suka).");
+dyn("ord","ord",OC,"Log Order & Penjualan","Satu baris per order. Omzet = jumlah × harga satuan; ongkir dipisahkan.");
+$("s-taste").insertAdjacentHTML("beforeend",`<div class="res" id="tavg"></div>`);
+$("s-ord").insertAdjacentHTML("beforeend",`<div class="res" id="osum"></div>`);
+
+// IG & SOP
+$("s-ig").innerHTML=`<h2>Kalender Konten Instagram</h2><p class="sub">Gunakan foto produk asli, informasi jelas, dan CTA sederhana.</p>`;
+listTable("ig","ig",["Hari","Format","Tujuan","Ide konten","CTA","Status","Link posting","Catatan performa"],IG,["Belum dibuat","Dibuat","Diposting"]);
+$("s-sop").innerHTML=`<h2>SOP Operasional Dasar</h2><p class="sub">Panduan awal; sesuaikan dengan resep, alat, dan ketentuan keamanan pangan yang berlaku.</p>`;
+listTable("sop","sop",["Kode","Area","Langkah kerja / standar","Status","Catatan / koreksi"],SOP.map((s,i)=>["SOP-"+String(i+1).padStart(2,"0"),s[0],s[1]]),["Belum dicek","Sudah","Perlu perbaikan"]);
+
+// calculations
+function calc(){
+  let tot=0,done=0,doneDays=0;
+  S.plan.forEach(p=>{p.c.forEach(x=>{tot++;if(x)done++});if(p.st==="Selesai")doneDays++});
+  const pct=Math.round(done/tot*100);
+  $("d1").textContent=done+" / "+tot;$("d2").textContent=pct+"%";$("d2b").style.width=pct+"%";
+  let tb=0,pr=0;
+  S.hpp.forEach((h,i)=>{const pc=num(h.j)?num(h.b)/num(h.j):0;pr+=pc;tb+=num(h.b);const ce=$("hpppc"+i);if(ce)ce.textContent=rp(pc)});
+  const price=num(S.price),k=price-pr;
+  $("r1").textContent=rp(tb);$("r2").textContent=rp(pr);$("r3").textContent=rp(k);
+  $("r4").textContent=price?Math.round(k/price*100)+"%":"–";
+  $("r5").textContent=k>0?Math.ceil(num(S.fixed)/k)+" roti":"–";
+  let oc=0,rt=0,om=0;
+  S.ord.forEach((o,i)=>{const a=num(o.q)*num(o.h),b=a+num(o.o);const e1=$("ordom"+i),e2=$("ordtt"+i);if(e1)e1.textContent=rp(a);if(e2)e2.textContent=rp(b);if(num(o.q)||o.p){oc++}rt+=num(o.q);om+=a});
+  $("d3").textContent=oc;$("d4").textContent=rt;$("d5").textContent=rp(om);
+  const T=S.taste.filter(t=>t.k||t.r||t.c);$("d6").textContent=T.length;
+  const av=f=>{const v=T.filter(t=>num(t[f])>0);return v.length?(v.reduce((a,t)=>a+num(t[f]),0)/v.length).toFixed(1):"–"};
+  const ya=T.filter(t=>t.b==="Ya").length;
+  if($("tavg"))$("tavg").innerHTML=[["Rasa",av("r")],["Tekstur",av("t")],["Tampilan",av("m")],["Harga",av("h")],["Mau membeli",T.length?Math.round(ya/T.length*100)+"%":"–"]].map(x=>`<div class="card stat"><small>Rata-rata ${x[0]}</small><b>${x[1]}</b></div>`).join("");
+  const lunas=S.ord.filter(o=>o.b==="Lunas").reduce((a,o)=>a+num(o.q)*num(o.h)+num(o.o),0);
+  if($("osum"))$("osum").innerHTML=[["Order",oc],["Roti terjual",rt],["Omzet produk",rp(om)],["Sudah lunas",rp(lunas)]].map(x=>`<div class="card stat"><small>${x[0]}</small><b>${x[1]}</b></div>`).join("");
+}
+
+// events
+document.addEventListener("input",e=>{
+  const t=e.target,k=t.dataset.k;
+  if(t.id==="price"||t.id==="fixed"){S[t.id]=num(t.value);save();calc();return}
+  if(!k)return;const i=+t.dataset.i;
+  if(t.type==="checkbox")S[k][i].c[+t.dataset.j]=t.checked?1:0;else if(t.dataset.f==="it")S[k][i].it[+t.dataset.j]=t.value;else S[k][i][t.dataset.f]=t.value;
+  if(t.tagName==="TEXTAREA")fit(t);
+  save();calc();
+});
+document.addEventListener("click",e=>{
+  const a=e.target.dataset.add,d=e.target.dataset.del;
+  if(e.target.dataset.edit){const sc=$("s-"+e.target.dataset.edit),on=sc.classList.toggle("editing");sc.querySelectorAll("textarea.ed").forEach(x=>{x.readOnly=!on;fit(x)});e.target.textContent=on?"✔ Selesai edit":"✏️ Mode edit"}
+  if(a){S[a].push(a==="hpp"?{k:"",b:0,j:50,n:""}:{});save();paint(a,COLS[a])}
+  if(d){S[d].splice(+e.target.dataset.i,1);save();paint(d,COLS[d])}
+});
+if(!S.taste.length)for(let i=0;i<5;i++)S.taste.push({}),S.ord.push({});
+paint("hpp",HC);paint("taste",TC);paint("ord",OC);calc();
+window.addEventListener("resize",()=>document.querySelectorAll("section.on textarea").forEach(fit));
+show("dash");
+document.addEventListener("pointerdown",e=>{const b=e.target.closest("nav button,.btn");if(!b)return;const r=b.getBoundingClientRect(),d=Math.max(r.width,r.height),sp=document.createElement("span");sp.className="rip";sp.style.cssText=`width:${d}px;height:${d}px;left:${e.clientX-r.left-d/2}px;top:${e.clientY-r.top-d/2}px`;b.appendChild(sp);setTimeout(()=>sp.remove(),650)});
+</script>
+</body>
+</html>
