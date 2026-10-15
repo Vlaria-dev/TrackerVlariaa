@@ -172,7 +172,7 @@ $("s-dash").innerHTML=`<h2>Ringkasan progres</h2><p class="sub">Terisi otomatis 
 <li>Catat pesanan dan pembayaran di <b>Order</b>.</li>
 <li>Pakai <b>Konten Instagram</b> untuk menjaga konsistensi branding.</li>
 <li>Terapkan <b>SOP</b>; checklist tidak menggantikan validasi keamanan pangan.</li></ol></div>
-<p class="note">Template kerja ini bukan pengganti konsultasi keamanan pangan/perizinan. Perubahan disimpan otomatis dan disinkronkan ke semua perangkat yang membuka halaman ini. Orang yang hanya diberi akses lihat tidak dapat mengubah data.</p>`;
+<p class="note">Template kerja ini bukan pengganti konsultasi keamanan pangan/perizinan. Perubahan disimpan otomatis ke Google Sheets dan disinkronkan ke semua perangkat yang membuka halaman ini (diperbarui tiap beberapa detik).</p>`;
 
 // PLAN
 $("s-plan").innerHTML=`<h2>Planning 7 Hari</h2><p class="sub">Fokus: validasi produk, uji rasa ke orang terdekat, branding Instagram, dan pre-order skala kecil.</p>`+EB("plan")+S.plan.map((p,i)=>`<div class="card day"><h3><small>${PLAN[i][0]}</small>${ta("plan",i,"f",p.f,"h")}</h3>${p.it.map((t,j)=>`<div class="chk"><input type="checkbox" data-k="plan" data-i="${i}" data-j="${j}"${p.c[j]?" checked":""}>${ta("plan",i,"it",t,"",j)}</div>`).join("")}<div class="tg"><span>🎯</span>${ta("plan",i,"t",p.t)}</div><div class="row"><select data-k="plan" data-i="${i}" data-f="st">${opt(["Belum mulai","Sedang jalan","Selesai"],p.st)}</select><input type="date" data-k="plan" data-i="${i}" data-f="due" value="${p.due}"><textarea class="wr" rows="1" style="flex:3 1 220px" placeholder="Catatan / hasil aktual" data-k="plan" data-i="${i}" data-f="n">${esc(p.n)}</textarea></div></div>`).join("");
@@ -253,17 +253,27 @@ window.addEventListener("resize",()=>document.querySelectorAll("section.on texta
 let t0="dash",y0=0;try{t0=sessionStorage.getItem("rv_tab")||"dash";y0=+sessionStorage.getItem("rv_y")||0;sessionStorage.removeItem("rv_y")}catch(e){}
 show(TABS.some(t=>t[0]===t0)?t0:"dash");if(y0)scrollTo(0,y0);
 
-// ===== Sinkronisasi antar perangkat =====
+// ===== Sinkronisasi Google Sheets (via Google Apps Script) =====
+const SYNC_URL="https://script.google.com/macros/s/AKfycbzi5wrQoMQlDOJ0jAE6RAWHWuuk4gGG29GAGbotxR4TVgxMQ3J5lwQSzvpecSeXzT1b/exec";   // tempel URL Web App Apps Script (berakhiran /exec)
+const SYNC_TOKEN="Sukses"; // harus sama persis dengan TOKEN di Apps Script
 const SK=["plan","hpp","taste","ord","ig","sop"];
 const sec=k=>k==="hpp"?{v:S.hpp,price:S.price,fixed:S.fixed}:{v:S[k]};
 const js=k=>JSON.stringify(sec(k));
-let DB=null,canW=true,last={},tmr=null,busy=false,again=false,rt=null;
+let on=!!SYNC_URL,last={},tmr=null,busy=false,again=false,rt=null,lastPush=0;
 const setSt=t=>{const e=$("sync");if(e)e.textContent=t};
-function queueSync(){if(!DB||!canW)return;setSt("☁️ Menyimpan…");clearTimeout(tmr);tmr=setTimeout(flush,800)}
+function queueSync(){if(!on)return;setSt("☁️ Menyimpan…");clearTimeout(tmr);tmr=setTimeout(flush,800)}
 async function flush(){
-  tmr=null;if(!DB||!canW)return;if(busy){again=true;return}busy=true;
-  try{for(const k of SK){if(last[k]===undefined)continue;const j=js(k);if(j!==last[k]){await DB.doc("tracker/"+k).set(sec(k));last[k]=j}}setSt("☁️ Tersinkron")}
-  catch(e){if(e&&e.code==="invalid_argument"){canW=false;setSt("👁 Hanya lihat (tidak bisa menyimpan)")}else setSt("⚠️ Gagal sinkron, data aman di perangkat ini")}
+  tmr=null;if(!on)return;if(busy){again=true;return}busy=true;
+  try{
+    for(const k of SK){
+      if(last[k]===undefined)continue;const j=js(k);
+      if(j!==last[k]){
+        const r=await fetch(SYNC_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:SYNC_TOKEN,key:k,json:j})});
+        const d=await r.json();if(!d.ok)throw new Error(d.error||"gagal");last[k]=j;
+      }
+    }
+    lastPush=Date.now();setSt("☁️ Tersinkron");
+  }catch(e){setSt("⚠️ Gagal sinkron, data aman di perangkat ini")}
   busy=false;if(again){again=false;flush()}
 }
 function reloadSoon(){
@@ -271,28 +281,29 @@ function reloadSoon(){
     try{sessionStorage.setItem("rv_y",String(scrollY))}catch(e){}location.reload()};
   clearTimeout(rt);rt=setTimeout(go,400);
 }
-function onDoc(k,snap){
-  if(!snap.exists){if(last[k]===undefined){last[k]=null;if(canW)queueSync()}return}
-  const d=snap.data(),rj=JSON.stringify(k==="hpp"?{v:d.v,price:d.price,fixed:d.fixed}:{v:d.v});
+function onRemote(k,rj){
+  if(rj===undefined){if(last[k]===undefined){last[k]=null;queueSync()}return}
   if(rj===js(k)){last[k]=rj;return}
   if(rj===last[k])return;
-  if(last[k]!==undefined&&js(k)!==last[k])return;
+  if(last[k]!==undefined&&last[k]!==null&&js(k)!==last[k])return;
+  let d;try{d=JSON.parse(rj)}catch(e){return}
   S[k]=d.v;if(k==="hpp"){if(d.price!==undefined)S.price=d.price;if(d.fixed!==undefined)S.fixed=d.fixed}
   last[k]=rj;saveLocal();reloadSoon();
 }
-(async()=>{
+async function pull(){
+  if(!on||busy||tmr)return;const t0=Date.now();
   try{
-    if(!(window.claude&&claude.use)){setSt("💾 Tersimpan di perangkat ini saja");return}
-    DB=await claude.use("db");
-    if(!DB){setSt("💾 Tersimpan di perangkat ini saja");return}
-    try{const u=await claude.use("user");if(u&&(await u.can("data.write"))===false)canW=false}catch(e){}
-    setSt(canW?"☁️ Menyinkronkan…":"👁 Hanya lihat");
-    SK.forEach(k=>DB.doc("tracker/"+k).onSnapshot(sn=>{onDoc(k,sn);if(canW&&!tmr&&!busy)setSt("☁️ Tersinkron")},()=>setSt("⚠️ Sinkron terputus")));
-  }catch(e){setSt("💾 Tersimpan di perangkat ini saja")}
-})();
-document.addEventListener("visibilitychange",()=>{if(document.hidden&&tmr){clearTimeout(tmr);flush()}});
-
-document.addEventListener("pointerdown",e=>{const b=e.target.closest("nav button,.btn");if(!b)return;const r=b.getBoundingClientRect(),d=Math.max(r.width,r.height),sp=document.createElement("span");sp.className="rip";sp.style.cssText=`width:${d}px;height:${d}px;left:${e.clientX-r.left-d/2}px;top:${e.clientY-r.top-d/2}px`;b.appendChild(sp);setTimeout(()=>sp.remove(),650)});
+    const r=await fetch(SYNC_URL+"?token="+encodeURIComponent(SYNC_TOKEN)+"&t="+t0);
+    const d=await r.json();if(!d.ok)throw new Error(d.error||"gagal");
+    if(busy||tmr||t0<lastPush)return;
+    SK.forEach(k=>onRemote(k,d.data[k]));
+    setSt("☁️ Tersinkron");
+    if(SK.some(k=>last[k]!==undefined&&last[k]!==null&&js(k)!==last[k]))queueSync();
+  }catch(e){setSt("⚠️ Tidak bisa terhubung ke Google Sheets")}
+}
+if(on){setSt("☁️ Menyinkronkan…");pull();setInterval(()=>{if(!document.hidden)pull()},8000)}
+else setSt("💾 Tersimpan di perangkat ini (sinkronisasi belum diatur)");
+document.addEventListener("visibilitychange",()=>{if(!on)return;if(document.hidden){if(tmr){clearTimeout(tmr);flush()}}else pull()});
 </script>
 </body>
 </html>
